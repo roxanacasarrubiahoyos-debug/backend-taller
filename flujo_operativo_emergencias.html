@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flujo Operativo — Plataforma de Emergencias Vehiculares</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #1a1a1a; padding: 24px; max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .sub { font-size: 13px; color: #666; margin-bottom: 20px; }
+  button { font-family: inherit; cursor: pointer; }
+  #pbtn, #nbtn { font-size: 13px; padding: 7px 16px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #333; transition: all .15s; }
+  #pbtn:hover:not(:disabled), #nbtn:hover:not(:disabled) { border-color: #999; }
+  #pbtn:disabled, #nbtn:disabled { opacity: 0.35; cursor: default; }
+
+  .pn{display:flex;gap:4px;flex-wrap:wrap;margin:0 0 16px}
+  .pb{font-size:12px;padding:6px 10px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#555;cursor:pointer;transition:all .15s}
+  .pb:hover{border-color:#999;color:#111}
+  .pb.on{background:#EBF4FF;color:#1a56db;border-color:#93C5FD}
+  .pp{display:none}.pp.on{display:block}
+  .ar{display:flex;gap:8px;align-items:flex-start;margin:0 0 10px;padding:10px 12px;border-radius:8px;border:1px solid #e5e7eb;background:#fff}
+  .ab{font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0}
+  .ac{font-size:13px;color:#111;line-height:1.6;flex:1}
+  .ap{font-size:11px;color:#888;display:block;margin-top:2px}
+  .bc{background:#DBEAFE;color:#1e3a8a}
+  .bs{background:#EDE9FE;color:#4c1d95}
+  .bo{background:#FEF3C7;color:#78350f}
+  .ba{background:#FFE4E6;color:#881337}
+  .bd{background:#D1FAE5;color:#064e3b}
+  .tr{font-size:12px;color:#1a56db;margin:12px 0 0;padding:10px 14px;background:#EBF4FF;border-radius:8px;line-height:1.6;border:1px solid #BFDBFE}
+  .pt{font-size:16px;font-weight:600;color:#111;margin:0 0 4px}
+  .pd{font-size:13px;color:#555;margin:0 0 14px}
+  .dw{text-align:center;color:#bbb;font-size:16px;margin:4px 0}
+  .lg{display:flex;gap:12px;flex-wrap:wrap;margin:0 0 16px;padding:10px 12px;border-radius:8px;background:#f3f4f6;border:1px solid #e5e7eb}
+  .li{display:flex;align-items:center;gap:4px;font-size:12px;color:#555}
+  .ld{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+  .fb{display:flex;justify-content:space-between;margin-top:16px;align-items:center}
+  .fc{font-size:13px;color:#666}
+
+  @media(prefers-color-scheme:dark){
+    body{background:#0f172a;color:#e2e8f0}
+    .ar{background:#1e293b;border-color:#334155}
+    .pb{background:#1e293b;border-color:#334155;color:#94a3b8}
+    .pb.on{background:#1e3a5f;color:#93C5FD;border-color:#3b82f6}
+    .lg{background:#1e293b;border-color:#334155}
+    .li{color:#94a3b8}
+    .tr{background:#1e3a5f;border-color:#3b82f6;color:#93C5FD}
+    .pt{color:#f1f5f9}
+    .pd{color:#94a3b8}
+    .ap{color:#64748b}
+    .fc{color:#64748b}
+    #pbtn,#nbtn{background:#1e293b;border-color:#334155;color:#e2e8f0}
+    .bc{background:#1e3a5f;color:#93C5FD}
+    .bs{background:#2d1b69;color:#c4b5fd}
+    .bo{background:#451a03;color:#fcd34d}
+    .ba{background:#4c0519;color:#fca5a5}
+    .bd{background:#022c22;color:#6ee7b7}
+  }
+</style>
+</head>
+<body>
+<h1>Flujo Operativo — Plataforma de Emergencias Vehiculares</h1>
+<p class="sub">Interacción paso a paso entre todos los actores del sistema</p>
+
+<div class="lg">
+  <div class="li"><div class="ld" style="background:#378ADD"></div>Cliente</div>
+  <div class="li"><div class="ld" style="background:#7F77DD"></div>Sistema / IA</div>
+  <div class="li"><div class="ld" style="background:#BA7517"></div>Dueño de Taller</div>
+  <div class="li"><div class="ld" style="background:#D85A30"></div>Administrador</div>
+  <div class="li"><div class="ld" style="background:#1D9E75"></div>Técnico</div>
+</div>
+
+<div class="pn" id="nav"></div>
+<div id="panels"></div>
+<div class="fb">
+  <button id="pbtn" onclick="mv(-1)">← Anterior</button>
+  <span class="fc" id="cnt"></span>
+  <button id="nbtn" onclick="mv(1)">Siguiente →</button>
+</div>
+
+<script>
+const P=[
+{t:"Fase 1 — Configuración inicial del sistema",d:"El administrador prepara la plataforma antes de que talleres y clientes puedan operar.",s:[
+{a:"ba",l:"Administrador",p:"Portal web /admin/dashboard",x:"Inicia sesión con la cuenta superusuario creada con manage.py createsuperuser. Accede al panel de administración en /admin. Verifica que los tres roles base estén disponibles en el sistema: admin, workshop_owner y client."},
+{a:"ba",l:"Administrador",p:"Portal web /admin/commission",x:"Accede al módulo de Comisiones. Configura la comisión inicial de la plataforma: 10% sobre el precio cobrado al cliente por cada servicio completado. Establece la fecha de vigencia (hoy) y una descripción: 'Comisión base de lanzamiento'. Guarda. Este porcentaje se aplicará automáticamente a todos los pagos hasta que se configure uno nuevo."},
+{a:"ba",l:"Administrador",p:"Portal web /admin/dashboard",x:"Revisa el dashboard global: ve los KPIs vacíos (0 talleres verificados, 0 incidentes, 0 ingresos). Confirma que el sistema está listo para recibir registros de talleres y clientes. El sistema de notificaciones push (Firebase) y el procesamiento de pagos (Stripe) ya están configurados en el backend por el equipo de desarrollo."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Al arrancar Django se cargan en memoria el modelo TensorFlow (model.h5) y el labels.json del clasificador de incidentes. El singleton IncidentClassifier queda listo para procesar imágenes sin demora. Los workers de django-q2 se inician y quedan en espera de tareas asíncronas. El servidor ASGI con django-eventstream está activo para Server-Sent Events."},
+],tr:"La plataforma está operativa. El admin tiene control total. La comisión del 10% está configurada y se aplicará automáticamente a cada servicio completado. El clasificador de IA está cargado en memoria y listo para analizar imágenes."},
+
+{t:"Fase 2 — Registro y verificación del taller",d:"Un dueño de taller se registra en la plataforma web y espera aprobación del administrador.",s:[
+{a:"bo",l:"Dueño de Taller",p:"Portal web /auth/register",x:"Ingresa al portal web y completa el formulario de registro: nombre completo, email, teléfono, contraseña y número de NIT/cédula empresarial. El sistema crea el usuario con role=workshop_owner y el WorkshopOwnerProfile vinculado. Recibe email de confirmación."},
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/perfil",x:"Con su cuenta creada, accede al perfil del taller y completa la información: nombre del taller, descripción, dirección, servicios que ofrece (batería, llantas, remolque, motor, cerrajería, general), radio de cobertura en km y sube el logo. Ajusta en el mapa interactivo (Leaflet) la ubicación exacta del taller arrastrando el marcador."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Crea el registro Workshop con is_verified=false e is_active=false. El taller no puede recibir solicitudes mientras no sea verificado. Genera notificación al administrador: 'Nuevo taller pendiente de verificación: Taller Mecánico Pérez.'"},
+{a:"ba",l:"Administrador",p:"Portal web /admin/talleres",x:"Recibe la notificación de nuevo taller. Ingresa al módulo de Talleres en el panel admin. Ve la ficha del taller: nombre, dirección, servicios declarados, NIT, logo subido. Verifica que la información es legítima. Pulsa el botón 'Verificar y Activar Taller'."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Actualiza el Workshop: is_verified=true, is_active=true. Envía notificación push Firebase al dueño del taller: '¡Tu taller fue aprobado! Ya apareces en la plataforma y puedes recibir solicitudes de emergencia.'"},
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/dashboard",x:"Recibe la notificación de aprobación. Crea a sus técnicos: agrega a Juan Pérez con teléfono, especialidades (batería y motor), foto y lo marca como disponible. Pulsa 'Conectar cuenta Stripe' y completa el onboarding de Stripe Connect con sus datos bancarios."},
+{a:"bs",l:"Sistema",p:"Backend Django + Stripe",x:"Genera el AccountLink de Stripe Connect para el onboarding. Al completarlo, el stripe_account_id queda registrado en el WorkshopOwnerProfile. El taller ahora puede recibir transferencias automáticas del neto de cada servicio (total - comisión de la plataforma)."},
+],tr:"El taller está verificado, activo, con sus técnicos registrados y con cuenta Stripe conectada. Aparece en el radar de búsqueda de la app móvil para clientes."},
+
+{t:"Fase 3 — Registro del cliente y primera apertura de la app",d:"El cliente descarga la app, se registra y visualiza el radar de talleres cercanos.",s:[
+{a:"bc",l:"Cliente",p:"App móvil — pantalla de bienvenida",x:"Descarga la app. Al abrir por primera vez toca 'Registrarse'. Completa el formulario en dos pasos: Paso 1 — nombre, apellido, email, teléfono, contraseña. Paso 2 (opcional) — registra su primer vehículo: marca Toyota, modelo Corolla, año 2020, placa 3256-BGT, color gris, tipo automóvil."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Crea el User con role=client y el ClientProfile vinculado. Crea el registro en Stripe como Customer (stripe_customer_id) para futuros pagos. Crea el Vehicle vinculado al ClientProfile. Devuelve los tokens JWT. La app los guarda en expo-secure-store (cifrado en el dispositivo)."},
+{a:"bc",l:"Cliente",p:"App móvil — permisos",x:"El sistema solicita permiso para enviar notificaciones push. El cliente acepta. Expo genera el FCM token del dispositivo. La app hace POST /api/app/auth/fcm-token/ y lo registra en el backend. Esto permite recibir notificaciones aunque la app esté cerrada."},
+{a:"bc",l:"Cliente",p:"App móvil — pantalla Home (Radar)",x:"Ve la pantalla principal: un mapa MapView centrado en su ubicación GPS. Un círculo semi-transparente de 20 km de radio indica el área de búsqueda. Aparecen marcadores de talleres: Taller Mecánico Pérez a 1.2 km, Mecánica 24h a 2.8 km, Taller Express a 3.5 km. En la parte inferior: botón rojo 'Reportar Emergencia' y botón gris 'Buscar Taller'."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Responde al GET /api/app/workshops/nearby/?lat=X&lng=Y&radius=20 con la lista de talleres activos y verificados dentro del radio, ordenados por distancia. Calcula distancias con geopy. Incluye nombre, logo, servicios, rating_avg y distance_km de cada taller."},
+{a:"bc",l:"Cliente",p:"App móvil — Home (Radar)",x:"Toca el marcador del Taller Mecánico Pérez. Aparece un BottomSheet con: logo, nombre, rating 4.8 estrellas, distancia 1.2 km, servicios disponibles (batería, motor, llantas). Si tiene un incidente activo aparece un banner naranja 'Tienes un incidente en curso'."},
+],tr:"El cliente está registrado, tiene tokens JWT guardados de forma segura, FCM token registrado para push notifications y puede ver en tiempo real los talleres cercanos en el radar."},
+
+{t:"Fase 4 — Reporte de emergencia (cliente en campo)",d:"El cliente tiene un problema con su vehículo y reporta la emergencia con evidencias multimedia.",s:[
+{a:"bc",l:"Cliente",p:"App móvil — Home",x:"Su Toyota Corolla no enciende en el estacionamiento del shopping. Toca el botón rojo 'Reportar Emergencia'. Aparece el Wizard — Paso 1: el mapa muestra su ubicación GPS actual. Geocoding inverso convierte coordenadas en texto: 'Av. San Martín y 2do Anillo'. Selecciona su vehículo del picker: Toyota Corolla 2020 - 3256-BGT. Agrega descripción: 'El carro no enciende, creo que es la batería.' Toca 'Siguiente'."},
+{a:"bs",l:"Sistema",p:"Backend Django — POST /api/app/incidents/",x:"Crea el registro Incident con status=pending, latitude/longitude, vehicle_id, description y address_text. Genera el incident_id=42. La app guarda el incident_id en el IncidentStore de Zustand."},
+{a:"bc",l:"Cliente",p:"App móvil — Wizard Paso 2 (Evidencias)",x:"Toca 'Tomar foto': se activa Expo Camera. Fotografía el tablero del vehículo completamente apagado. Sube la foto. Toca 'Grabar audio': micrófono activo con Expo AV. Graba 12 segundos: 'Hola, estoy en el shopping y mi carro Toyota Corolla no enciende para nada, creo que es un problema de batería, el tablero no muestra nada.' Sube el audio. Toca 'Enviar Emergencia'."},
+{a:"bs",l:"Sistema",p:"Backend Django — POST /api/app/incidents/42/evidence/",x:"Recibe la foto (multipart/form-data) y la guarda en /media/incidents/files/2026/04/07/foto_tablero.jpg. Recibe el audio y lo guarda en /media/incidents/files/2026/04/07/audio.m4a. Crea los registros en la tabla evidences (tipo image y tipo audio). Encola inmediatamente la tarea asíncrona en django-q2: process_incident_pipeline(42)."},
+{a:"bc",l:"Cliente",p:"App móvil — pantalla de seguimiento /emergency/status/42",x:"La app navega automáticamente a la pantalla de seguimiento. Badge animado 'Analizando con IA...' La app establece la conexión SSE al canal incident-42 para recibir actualizaciones en tiempo real. Firebase enviará push si la app se cierra."},
+],tr:"El incidente #42 fue creado con foto y audio guardados en el servidor local (/media/). El pipeline de IA está corriendo en background. Sin servicios externos de almacenamiento — todo en el servidor Django."},
+
+{t:"Fase 5 — Pipeline de IA (procesamiento en background)",d:"El sistema procesa automáticamente las evidencias con Whisper, TensorFlow y GPT-4o-mini.",s:[
+{a:"bs",l:"Sistema / IA",p:"django-q2 worker — process_incident_pipeline(42)",x:"El worker toma la tarea de la cola. Actualiza el Incident: status=analyzing. Emite evento SSE al canal incident-42: {event: 'status_change', status: 'analyzing'}. La app del cliente actualiza la UI en tiempo real sin recargar."},
+{a:"bs",l:"Sistema / IA",p:"WhisperService — OpenAI API Whisper-1",x:"Abre el archivo audio.m4a desde /media/. Llama a la API de OpenAI Whisper-1 con language=es. Recibe la transcripción: 'Hola, estoy en el shopping y mi carro Toyota Corolla no enciende para nada, creo que es un problema de batería, el tablero no muestra nada.' Guarda en Evidence.transcription y marca transcription_done=true."},
+{a:"bs",l:"Sistema / IA",p:"IncidentClassifier — TensorFlow MobileNetV2",x:"Carga foto_tablero.jpg, redimensiona a 224x224 px y aplica el preprocesamiento de MobileNetV2. El modelo .h5 (singleton en memoria) ejecuta la inferencia en milisegundos. Resultado: {battery: 0.87, tire: 0.04, engine: 0.05, accident: 0.02, other: 0.02}. Label ganador: 'battery' con 87% de confianza. Guarda image_analysis y label en Evidence."},
+{a:"bs",l:"Sistema / IA",p:"SummaryService — OpenAI GPT-4o-mini",x:"Construye el prompt con: transcripción del audio, clasificación TF (battery 87%), descripción del cliente y datos del vehículo. GPT-4o-mini devuelve el JSON: {tipo_incidente: 'battery', prioridad: 'media', resumen_breve: 'Falla eléctrica. Tablero sin respuesta, posible batería descargada.', servicios_requeridos: ['auxilio eléctrico', 'diagnóstico eléctrico'], notas_tecnicas: 'Verificar bornes y alternador.', requiere_grua: false}. Se guarda en Incident.ai_summary."},
+{a:"bs",l:"Sistema / IA",p:"AssignmentEngine — Motor de asignación",x:"Con incident_type=battery y priority=medium, actualiza el Incident: status=waiting_workshop. Consulta talleres activos, verificados, con técnicos disponibles y servicio 'battery' dentro de 20 km. Calcula score = (1/distancia) × rating_avg. Resultado: Taller Pérez (1.2 km, 4.8★) score=4.0 — primero. Mecánica 24h (2.8 km, 4.5★) score=1.6. Taller Express (3.5 km, 4.2★) score=1.2. Crea Assignments en estado offered para los 3 talleres."},
+{a:"bs",l:"Sistema / IA",p:"FirebaseService + SSE",x:"Envía push Firebase a los 3 dueños de taller: 'Nueva solicitud de emergencia: Problema de batería a 1.2 km. Prioridad: Media.' Emite SSE al canal incident-42: {event: 'ai_complete', type: 'battery', priority: 'medium'}. El cliente ve en su app cómo el badge cambia a 'Buscando taller disponible...' con el tipo detectado (batería) y la prioridad (media)."},
+],tr:"En menos de 30 segundos: audio transcrito (Whisper), foto clasificada (TF: batería 87%), resumen generado (GPT-4o-mini), 3 talleres candidatos notificados. Si la confianza fuera menor al 50%, el incidente se marcaría como 'incierto' y se solicitarían más evidencias al cliente."},
+
+{t:"Fase 6 — Asignación del taller y despacho del técnico",d:"El dueño del taller revisa el incidente con el resumen de IA, acepta la solicitud y asigna a su técnico.",s:[
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/incidentes",x:"Recibe la push notification y el SSE actualiza el badge del portal web con '1 solicitud nueva'. En la lista ve: chip naranja 'Media' de prioridad, ícono de batería, 'Av. San Martín y 2do Anillo — 1.2 km'. Hace clic para ver el detalle."},
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/incidentes/42",x:"Pantalla de detalle: mapa Leaflet con pin del cliente y pin del taller. Tarjeta de resumen IA: tipo 'Batería', confianza 87%, resumen 'Falla eléctrica - tablero sin respuesta', servicios requeridos, no requiere grúa. Galería: foto del tablero apagado y reproductor de audio nativo con la grabación. Transcripción Whisper visible. Datos del vehículo: Toyota Corolla 2020 gris. Botones: 'Aceptar' y 'Rechazar'."},
+{a:"bo",l:"Dueño de Taller",p:"Portal web — modal de aceptación",x:"Pulsa 'Aceptar solicitud'. Modal con el selector de técnico disponible: Juan Pérez (disponible, especialidad batería/motor) y Carlos López (disponible, llantas). Selecciona Juan Pérez. Ingresa tiempo estimado: 15 minutos. Pulsa 'Confirmar asignación'."},
+{a:"bs",l:"Sistema",p:"Backend Django — POST /api/web/incidents/42/accept/",x:"Actualiza el Assignment del taller: status=accepted, technician_id=Juan Pérez, estimated_arrival_minutes=15, accepted_at=ahora. Cancela las offers de los otros 2 talleres. Actualiza Incident: status=assigned. Registra en IncidentStatusHistory con timestamp."},
+{a:"bs",l:"Sistema",p:"Firebase + SSE",x:"Push al cliente: '¡Taller Mecánico Pérez aceptó tu solicitud! Juan Pérez llegará en ~15 minutos.' SSE al canal incident-42: {event: 'assigned', workshop: {nombre, logo, teléfono}, technician: {nombre, foto}, eta: 15}. La pantalla de seguimiento actualiza: aparece la tarjeta del taller con foto de Juan Pérez y tiempo estimado."},
+{a:"bd",l:"Técnico",p:"App móvil — notificación push",x:"Juan Pérez recibe la push: 'Nueva orden asignada: Problema de batería en Av. San Martín. Cliente: Toyota Corolla gris.' Abre la app, ve el detalle con el mapa de ruta. Actualiza su estado a 'en camino'."},
+],tr:"El taller aceptó en menos de 3 minutos. El cliente fue notificado por push y SSE simultáneamente. Juan Pérez tiene la orden y está en camino. El dueño del taller puede ver su ubicación en tiempo real en el portal web."},
+
+{t:"Fase 7 — Ejecución del servicio en campo",d:"El técnico llega al lugar, atiende el problema y el dueño del taller actualiza los estados en tiempo real.",s:[
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/incidentes/42",x:"Actualiza el estado a 'Técnico en camino'. Agrega nota: 'Juan salió con el cargador portátil de batería y el multímetro.'"},
+{a:"bs",l:"Sistema",p:"Backend Django + SSE",x:"Actualiza Assignment: status=in_route. Actualiza Incident: status=in_progress. Emite SSE: {event: 'in_route'}. Push al cliente: 'Juan Pérez está en camino. ETA: ~12 minutos.' La app muestra 'Técnico en camino' en el timeline de seguimiento."},
+{a:"bd",l:"Técnico",p:"En campo — llegada",x:"Llega al estacionamiento. Ve al cliente con el Toyota Corolla gris. El dueño actualiza el estado a 'Técnico llegó'."},
+{a:"bs",l:"Sistema",p:"Backend Django + SSE",x:"Actualiza Assignment: status=arrived. SSE: {event: 'arrived'}. Push al cliente: '¡Juan Pérez llegó a tu ubicación!'"},
+{a:"bd",l:"Técnico",p:"En campo — diagnóstico y resolución",x:"Mide la tensión de la batería: 9.8V (debería ser 12.6V, batería descargada). Conecta el cargador portátil de arranque. El motor enciende al primer intento. Verifica el alternador: 14.2V con el motor en marcha (correcto). Diagnóstico: batería descargada por falta de uso, alternador en buen estado. El cliente recupera el vehículo completamente operativo."},
+{a:"bo",l:"Dueño de Taller",p:"Portal web — modal completar servicio",x:"Pulsa 'Completar servicio'. Modal: ingresa el costo: $35 USD. Agrega nota técnica: 'Batería descargada. Carga de arranque realizada. Alternador OK. Se recomienda revisión completa de la batería.' Pulsa 'Confirmar cierre de servicio'."},
+{a:"bs",l:"Sistema",p:"Backend Django",x:"Actualiza Assignment: status=completed, service_cost=35. Actualiza Incident: status=completed, closed_at=ahora. Calcula: total=$35, comisión 10%=$3.50, neto_taller=$31.50. Crea Payment con status=pending. SSE al cliente: {event: 'service_completed', cost: 35}. Push: 'El servicio fue completado. Costo: $35. Por favor realiza el pago desde la app.'"},
+],tr:"El técnico diagnosticó y resolvió el problema en 20 minutos. El taller registró el costo: $35 USD. El sistema calculó: $3.50 de comisión (10%) para la plataforma y $31.50 de neto para el taller."},
+
+{t:"Fase 8 — Pago con Stripe y liquidación de comisión",d:"El cliente paga desde la app, Stripe distribuye automáticamente: neto al taller y comisión retenida.",s:[
+{a:"bc",l:"Cliente",p:"App móvil — pantalla de seguimiento",x:"Recibe push y SSE de servicio completado. Banner rojo: 'Servicio completado. Total: $35.00. Pagar ahora.' Toca el botón. La app navega al modal de pago."},
+{a:"bc",l:"Cliente",p:"App móvil — modal de pago",x:"Ve el resumen: Taller Mecánico Pérez — Asistencia eléctrica — $35.00. Aparece el CardField del Stripe SDK nativo. Ingresa los datos de su tarjeta. Toca 'Pagar $35.00'."},
+{a:"bs",l:"Sistema",p:"Backend Django — POST /api/app/payments/create-intent/",x:"Recupera la comisión activa: 10% ($3.50). Calcula: neto_taller=$31.50. Crea PaymentIntent en Stripe por $35 asociado al customer_id del cliente. Devuelve el client_secret. Los datos de tarjeta NUNCA pasan por el servidor Django — van directo al SDK de Stripe."},
+{a:"bc",l:"Cliente",p:"App móvil — Stripe SDK",x:"El SDK procesa el pago directamente con Stripe usando el client_secret. Stripe cobra $35 a la tarjeta. En 2-3 segundos confirma el pago exitoso. La app muestra: '✅ Pago exitoso.'"},
+{a:"bs",l:"Sistema",p:"Backend Django — webhook POST /api/stripe/webhook/",x:"Stripe envía el evento payment_intent.succeeded. Django verifica la firma stripe-signature con el STRIPE_WEBHOOK_SECRET. Actualiza Payment: status=client_paid, paid_at=ahora."},
+{a:"bs",l:"Sistema",p:"Backend Django + Stripe Connect",x:"Ejecuta la transferencia vía Stripe Connect: $31.50 al stripe_account_id del taller. La plataforma retiene $3.50 automáticamente. Actualiza Payment: status=commission_settled, settled_at=ahora. Push al taller: 'Pago recibido. Recibirás $31.50 en tu cuenta Stripe.'"},
+{a:"ba",l:"Administrador",p:"Portal web /admin/pagos",x:"En el panel ve el pago registrado: incidente #42, total $35, comisión $3.50 (10%), neto taller $31.50, ambas transacciones Stripe confirmadas. KPIs actualizados: ingresos del mes +$3.50 de comisión, servicios completados +1."},
+],tr:"El pago fue procesado exitosamente. Stripe distribuyó: $31.50 al taller (vía Transfer a su cuenta bancaria) y $3.50 como comisión de la plataforma. Los datos de tarjeta nunca pasaron por el servidor Django."},
+
+{t:"Fase 9 — Calificación, cierre y métricas",d:"El cliente califica el servicio, el taller cierra el ciclo y el administrador ve las métricas actualizadas.",s:[
+{a:"bc",l:"Cliente",p:"App móvil — pantalla de calificación",x:"Tras el pago, aparece automáticamente la pantalla de calificación. Calificación: 5 de 5 estrellas. Comentario: 'Excelente servicio, Juan llegó en 13 minutos y solucionó el problema al instante. Muy profesional.' Pulsa 'Enviar calificación'."},
+{a:"bs",l:"Sistema",p:"Backend Django — POST /api/app/workshops/{id}/rate/",x:"Crea el registro en workshop_ratings: score=5, comment=texto. Recalcula Workshop.rating_avg con la nueva calificación. Actualiza Workshop.total_services (+1). Este nuevo rating afecta de inmediato el score del motor de asignación para futuros incidentes."},
+{a:"bo",l:"Dueño de Taller",p:"Portal web /taller/dashboard",x:"Ve el dashboard actualizado: KPI de calificación promedio mejorado, servicios completados del mes +1, ingresos del mes +$31.50. En el historial aparece el caso #42 como completado con 5 estrellas. Puede ver el comentario del cliente. Actualiza la disponibilidad de Juan Pérez: lo marca como disponible para nuevas órdenes."},
+{a:"bc",l:"Cliente",p:"App móvil — pestaña Solicitudes",x:"La app regresa al radar. En la pestaña 'Solicitudes' ve el historial completo: incidente #42, Toyota Corolla, problema de batería, Taller Mecánico Pérez, Juan Pérez, $35 pagados, calificación 5 estrellas enviada."},
+{a:"ba",l:"Administrador",p:"Portal web /admin/dashboard",x:"KPIs globales actualizados: incidentes del mes +1, tasa de resolución 100%, tiempo promedio de asignación: 4 minutos, ingresos por comisiones del mes: $3.50, calificación promedio de la plataforma: 5.0. Puede ver que el clasificador de IA clasificó correctamente (battery) con 87% de confianza — dato útil para medir la precisión del modelo en producción."},
+{a:"bs",l:"Sistema",p:"Backend Django — métricas automáticas",x:"Registra las métricas del ciclo: tiempo hasta asignación (4 min), tiempo hasta llegada (13 min), tiempo total de resolución (33 min), costo del servicio ($35), confianza del clasificador IA (87%). Estas métricas alimentan los reportes del administrador y pueden usarse para reentrenar el clasificador con imágenes reales de incidentes de la plataforma."},
+],tr:"CICLO COMPLETO. Incidente de batería resuelto en 33 minutos: IA clasificó en 30 segundos, taller asignado en 4 min, técnico llegó en 13 min, servicio en 20 min. Cliente pagó $35, taller recibió $31.50, plataforma retuvo $3.50. Rating actualizado. Sistema listo para el siguiente incidente con motor de asignación más preciso."}
+];
+
+let c=0;
+const n=document.getElementById('nav'),ps=document.getElementById('panels'),ct=document.getElementById('cnt');
+P.forEach((p,i)=>{
+const b=document.createElement('button');
+b.className='pb';b.textContent='Fase '+(i+1);b.onclick=()=>sh(i);n.appendChild(b);
+const d=document.createElement('div');d.className='pp';
+let h='<p class="pt">'+p.t+'</p><p class="pd">'+p.d+'</p>';
+p.s.forEach((s,j)=>{
+h+='<div class="ar"><span class="ab '+s.a+'">'+s.l+'</span><div class="ac">'+s.x+'<span class="ap">'+s.p+'</span></div></div>';
+if(j<p.s.length-1)h+='<div class="dw">↓</div>';
+});
+if(p.tr)h+='<div class="tr">'+p.tr+'</div>';
+d.innerHTML=h;ps.appendChild(d);
+});
+function sh(i){
+c=i;
+document.querySelectorAll('.pb').forEach((b,j)=>b.classList.toggle('on',j===i));
+document.querySelectorAll('.pp').forEach((p,j)=>p.classList.toggle('on',j===i));
+ct.textContent='Fase '+(i+1)+' de '+P.length;
+document.getElementById('pbtn').disabled=i===0;
+document.getElementById('nbtn').disabled=i===P.length-1;
+}
+function mv(d){sh(Math.max(0,Math.min(P.length-1,c+d)))}
+sh(0);
+</script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+# Python
+*.pyc
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+/staticfiles/
+/static/
+
+# Environment
+.env
+venv/
+ENV/
+env/
+
+# Media files
+/media/
+
+# ML Models
+/ml_models/**/*.h5
+/ml_models/**/*.pb
+/ml_models/**/variables/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Django Q
+django_q/
+._*
+# Migrations (optional - uncomment if you want to ignore migrations)
+# */migrations/*.py
+# !*/migrations/__init__.py
+*.md
+PUSH_NOTIFICATIONS.txt
+*.json

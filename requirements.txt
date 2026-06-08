@@ -1,0 +1,50 @@
+# Core
+Django==5.1.4
+djangorestframework==3.15.2
+psycopg2-binary==2.9.9
+
+# Auth
+djangorestframework-simplejwt==5.3.1
+
+# API utils
+django-cors-headers==4.4.0
+django-filter==24.3
+drf-spectacular==0.27.2
+whitenoise==6.7.0
+
+# Async (sin Redis)
+django-q2==1.7.3
+django-eventstream==5.3.0
+daphne==4.1.2
+channels==4.2.0
+
+# IA
+openai>=1.0.0
+
+tensorflow==2.17.0
+numpy==1.26.4
+Pillow==10.4.0
+httpx==0.24.1
+# Pagos
+stripe==10.7.0
+
+# Geolocalización
+geopy==2.4.1
+
+# Firebase (app móvil)
+firebase-admin==6.5.0
+
+# Web Push panel web (VAPID, sin Firebase)
+pywebpush==1.14.0
+
+# Utils
+python-dotenv==1.0.1
+openpyxl==3.1.5
+
+dj-database-url==2.1.0
+
+# Dev / Testing
+pytest-django==4.8.0
+factory-boy==3.3.1
+
+gunicorn==21.2.0
