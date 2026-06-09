@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
+from apps.assignments.engine import AssignmentEngine
 from django.db.models import Prefetch
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
@@ -87,13 +88,17 @@ class IncidentViewSet(viewsets.ModelViewSet):
                 return Response(out.data, status=status.HTTP_200_OK)
         return super().create(request, *args, **kwargs)
 
-    def perform_create(self, serializer):
-        raw_id = (self.request.data.get('client_request_id') or '').strip() or None
-        incident = serializer.save(
-            client=self.request.user.client_profile,
-            status=IncidentStatus.PENDING,
-            client_request_id=raw_id,
-        )
+   def perform_create(self, serializer):
+    raw_id = (self.request.data.get('client_request_id') or '').strip() or None
+
+    incident = serializer.save(
+        client=self.request.user.client_profile,
+        status=IncidentStatus.PENDING,
+        client_request_id=raw_id,
+    )
+
+    from apps.assignments.engine import AssignmentEngine
+    AssignmentEngine.find_and_notify_workshops(incident)
         # El pipeline IA + motor de asignación se ejecutan tras subir evidencias
         # (upload_evidence), cuando hay datos para clasificar y ofrecer talleres.
 
